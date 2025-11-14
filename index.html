@@ -1,0 +1,261 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>E-Commerce Portal — Assignment 3</title>
+  <style>
+    :root{--accent:#0b69ff;--muted:#666;--card:#fff;--bg:#f4f7fb}
+    html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Roboto,Arial;background:var(--bg);color:#222}
+    header{background:white;box-shadow:0 2px 8px rgba(20,30,60,0.06);position:sticky;top:0;z-index:10}
+    .nav{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px}
+    .brand{font-weight:700;color:var(--accent)}
+    nav a{color:#222;text-decoration:none;padding:8px 12px;border-radius:8px}
+    nav a.active, nav a:hover{background:rgba(11,105,255,0.08);color:var(--accent)}
+    .main{max-width:1100px;margin:20px auto;padding:12px}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:18px}/* cards */
+.card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 20px rgba(20,30,60,0.04)}
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.product{padding:12px;border-radius:8px;border:1px solid #eee}
+.product h4{margin:6px 0 8px}
+.btn{display:inline-block;padding:8px 10px;border-radius:8px;border:none;background:var(--accent);color:white;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(11,105,255,0.12)}
+
+form .row{display:flex;gap:8px;margin-bottom:8px}
+label{font-size:13px;color:var(--muted)}
+input,textarea,select{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;font-size:14px}
+.error{color:#b00020;font-size:13px}
+
+aside .list{display:flex;flex-direction:column;gap:8px}
+.small{font-size:13px;color:var(--muted)}
+.pill{display:inline-block;padding:4px 8px;background:#f3f7ff;border-radius:999px;font-size:12px;color:var(--accent)}
+
+footer{text-align:center;padding:18px;color:var(--muted);font-size:13px}
+
+/* responsive */
+@media (max-width:880px){.grid{grid-template-columns:1fr}aside{order:-1}}
+
+  </style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <div class="brand">ShopDemo</div>
+    <nav id="menu" style="margin-left:8px;display:flex;gap:4px;align-items:center">
+      <a href="#home" data-view="home" class="active">Home</a>
+      <a href="#products" data-view="products">Products</a>
+      <a href="#contact" data-view="contact">Contact Us</a>
+      <a href="#about" data-view="about">About Us</a>
+    </nav>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <button id="show-login" class="btn ghost">Login / Register</button>
+      <button id="btn-wishlist" class="btn">Wishlist <span id="ws-count" class="pill" style="margin-left:6px">0</span></button>
+    </div>
+  </div>
+</header><main class="main">
+  <div class="grid">
+    <section id="content-area">
+      <!-- Views will be injected here -->
+    </section><aside>
+  <div class="card">
+    <h3>Your Account</h3>
+    <div id="account-area" class="small">Not signed in</div>
+    <div style="margin-top:10px" id="account-actions"></div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <h3>Orders</h3>
+    <div id="orders-list" class="small">No orders yet</div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <h3>Customer Care</h3>
+    <small class="small">Report an issue</small>
+    <form id="report-form" style="margin-top:8px">
+      <input name="subject" placeholder="Subject" required />
+      <textarea name="message" placeholder="Describe the issue" rows="3" required style="margin-top:6px"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" type="submit">Send</button><button class="btn ghost" type="button" id="clear-reports">Clear</button></div>
+      <div id="report-status" class="small" style="margin-top:8px"></div>
+    </form>
+  </div>
+</aside>
+
+  </div>  <footer>Assignment 3 — E-Commerce Portal demo • Local demo using localStorage</footer>
+</main><!-- Login/Register Modal (simple) --><div id="auth-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);align-items:center;justify-content:center">
+  <div class="card" style="width:680px;max-width:95%;display:flex;gap:12px">
+    <div style="flex:1">
+      <h3 id="auth-title">Login</h3>
+      <form id="login-form">
+        <label>Email</label>
+        <input name="email" type="email" required />
+        <label>Password</label>
+        <input name="password" type="password" required />
+        <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" type="submit">Login</button><button type="button" class="btn ghost" id="to-register">Go to Register</button></div>
+        <div id="login-error" class="error"></div>
+      </form>
+    </div>
+    <div style="width:360px;border-left:1px solid #eee;padding-left:12px">
+      <h3>Register</h3>
+      <form id="register-form">
+        <label>Full name</label>
+        <input name="name" required />
+        <label>Email</label>
+        <input name="email" type="email" required />
+        <label>Phone</label>
+        <input name="phone" placeholder="10 digit" required />
+        <label>Password (min 8 with digits)</label>
+        <input name="password" type="password" required />
+        <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" type="submit">Register</button><button type="button" class="btn ghost" id="to-login">Go to Login</button></div>
+        <div id="register-error" class="error"></div>
+      </form>
+    </div>
+  </div>
+</div><script>
+// ---------- Simple demo data & utilities ----------
+const sampleProducts = [
+  {id:1,title:'Smartphone X1',price:19999,desc:'5.8" display, 64GB storage'},
+  {id:2,title:'Wireless Headphones',price:2999,desc:'Noise-cancelling, 20h battery'},
+  {id:3,title:'Fitness Band',price:1499,desc:'Heart-rate monitor'},
+  {id:4,title:'Laptop Pro 14"',price:89999,desc:'16GB RAM, SSD 512GB'}
+];
+
+// localStorage keys
+const LS_USERS = 'demo_users_v1';
+const LS_SESSION = 'demo_session_v1';
+const LS_CART = 'demo_cart_v1';
+const LS_WISHLIST = 'demo_wishlist_v1';
+const LS_ORDERS = 'demo_orders_v1';
+const LS_REVIEWS = 'demo_reviews_v1';
+const LS_REPORTS = 'demo_reports_v1';
+
+// Read/write helpers
+const db = {
+  get(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}},
+  set(k,v){localStorage.setItem(k,JSON.stringify(v))},
+  clear(k){localStorage.removeItem(k)}
+};
+
+// Initialize stores if missing
+if(!db.get(LS_USERS,[])) db.set(LS_USERS,[]);
+if(!db.get(LS_WISHLIST,[])) db.set(LS_WISHLIST,[]);
+if(!db.get(LS_ORDERS,[])) db.set(LS_ORDERS,[]);
+if(!db.get(LS_REVIEWS,[])) db.set(LS_REVIEWS,[]);
+if(!db.get(LS_REPORTS,[])) db.set(LS_REPORTS,[]);
+
+// ---------- Routing & view render ----------
+const views = document.getElementById('content-area');
+const menu = document.getElementById('menu');
+const authModal = document.getElementById('auth-modal');
+
+function setActiveMenu(name){Array.from(menu.querySelectorAll('a')).forEach(a=>{a.classList.toggle('active', a.dataset.view===name)})}
+
+function renderHome(){setActiveMenu('home');
+  views.innerHTML = `
+    <div class="card">
+      <h2>Welcome to ShopDemo</h2>
+      <p class="small">A simple single-file demo satisfying the assignment requirements:</p>
+      <ul class="small">
+        <li>Menu for navigation</li>
+        <li>Registration & Login with validation</li>
+        <li>Orders list, Wishlist, Comments/Reviews, Customer Care reporting</li>
+      </ul>
+    </div>
+    <div style="height:12px"></div>
+    <div class="card">
+      <h3>Featured Products</h3>
+      <div class="products" id="products-grid"></div>
+    </div>
+  `;
+  const grid = document.getElementById('products-grid');
+  sampleProducts.forEach(p=>{
+    const el = document.createElement('div'); el.className='product';
+    el.innerHTML = `<h4>${p.title}</h4><div class="small">${p.desc}</div><strong style="display:block;margin-top:6px">₹ ${p.price}</strong>
+      <div style="margin-top:10px"><button class="btn" data-add="${p.id}">Add to Orders</button> <button class="btn ghost" data-wish="${p.id}">Wishlist</button> <button class="btn ghost" data-review="${p.id}">Review</button></div>`;
+    grid.appendChild(el);
+  });
+}
+
+function renderProducts(){setActiveMenu('products');
+  views.innerHTML = `
+    <div class="card">
+      <h2>All Products</h2>
+      <div class="products" id="products-grid"></div>
+    </div>
+  `;
+  const grid = document.getElementById('products-grid');
+  sampleProducts.forEach(p=>{
+    const el = document.createElement('div'); el.className='product';
+    el.innerHTML = `<h4>${p.title}</h4><div class="small">${p.desc}</div><strong style="display:block;margin-top:6px">₹ ${p.price}</strong>
+      <div style="margin-top:10px"><button class="btn" data-add="${p.id}">Add to Orders</button> <button class="btn ghost" data-wish="${p.id}">Wishlist</button> <button class="btn ghost" data-review="${p.id}">Review</button></div>`;
+    grid.appendChild(el);
+  });
+}
+
+function renderContact(){setActiveMenu('contact');
+  views.innerHTML = `
+    <div class="card">
+      <h2>Contact Us</h2>
+      <p class="small">Use customer care panel on the right for reporting. Or send direct message below.</p>
+      <form id="contact-form">
+        <label>Name</label><input name="name" required />
+        <label>Email</label><input name="email" type="email" required />
+        <label>Message</label><textarea name="message" rows="4" required></textarea><div style="margin-top:8px"><button class="btn">Send Message</button></div>
+    <div id="contact-status" class="small" style="margin-top:8px"></div>
+  </form>
+</div>
+
+`; }
+
+function renderAbout(){setActiveMenu('about'); views.innerHTML = <div class="card"> <h2>About Us</h2> <p class="small">This is a demo e-commerce portal built for Assignment 3. All data is stored locally in your browser (localStorage).</p> </div>; }
+
+// initial route renderHome();
+
+// navigation handlers menu.addEventListener('click',e=>{ if(e.target.matches('a')){ const view = e.target.dataset.view; if(view==='home') renderHome(); if(view==='products') renderProducts(); if(view==='contact') renderContact(); if(view==='about') renderAbout(); } });
+
+// show auth modal document.getElementById('show-login').addEventListener('click',()=>{authModal.style.display='flex'}); // modal close on outside click authModal.addEventListener('click',e=>{if(e.target===authModal) authModal.style.display='none'});
+
+// ---------- Validation & Auth (simple localStorage based) ---------- function validatePhone(p){return /^\d{10}$/.test(p)} function validatePassword(p){return p.length>=8 && /\d/.test(p)}
+
+// Register const registerForm = document.getElementById('register-form'); registerForm.addEventListener('submit',e=>{ e.preventDefault(); const fd = new FormData(registerForm); const name = fd.get('name').trim(); const email = fd.get('email').trim().toLowerCase(); const phone = fd.get('phone').trim(); const password = fd.get('password'); const users = db.get(LS_USERS,[]); const ele = document.getElementById('register-error'); ele.textContent=''; if(!validatePhone(phone)){ele.textContent='Phone must be 10 digits.'; return} if(!validatePassword(password)){ele.textContent='Password min 8 chars and must contain digits.'; return} if(users.some(u=>u.email===email)){ele.textContent='Email already registered.'; return} const user = {id:Date.now(),name,email,phone,password}; users.push(user); db.set(LS_USERS,users); // auto-login db.set(LS_SESSION,{userId:user.id}); ele.textContent='Registered & signed in.'; updateAccountArea(); authModal.style.display='none'; });
+
+// Login const loginForm = document.getElementById('login-form'); loginForm.addEventListener('submit',e=>{ e.preventDefault(); const fd = new FormData(loginForm); const email = fd.get('email').trim().toLowerCase(); const password = fd.get('password'); const users = db.get(LS_USERS,[]); const ele = document.getElementById('login-error'); ele.textContent=''; const user = users.find(u=>u.email===email && u.password===password); if(!user){ele.textContent='Invalid credentials.'; return} db.set(LS_SESSION,{userId:user.id}); ele.textContent='Signed in'; updateAccountArea(); authModal.style.display='none'; });
+
+function getCurrentUser(){const s=db.get(LS_SESSION,null); if(!s) return null; const users=db.get(LS_USERS,[]); return users.find(u=>u.id===s.userId)||null}
+
+function updateAccountArea(){const acc=document.getElementById('account-area'); const actions=document.getElementById('account-actions'); const user=getCurrentUser(); actions.innerHTML=''; if(!user){acc.textContent='Not signed in'; actions.innerHTML='<button class="btn" id="btn-signin">Sign in</button>'; document.getElementById('btn-signin').addEventListener('click',()=>authModal.style.display='flex'); } else {acc.innerHTML=<strong>${user.name}</strong><div class="small">${user.email}</div>; actions.innerHTML='<button class="btn" id="btn-signout">Sign out</button>'; document.getElementById('btn-signout').addEventListener('click',()=>{db.clear(LS_SESSION); updateAccountArea();}); } renderOrdersPanel(); renderWishlistCount(); } updateAccountArea();
+
+// quick toggles between forms document.getElementById('to-register').addEventListener('click',()=>{document.getElementById('auth-title').textContent='Register';}); document.getElementById('to-login').addEventListener('click',()=>{document.getElementById('auth-title').textContent='Login';});
+
+// ---------- Orders, Wishlist, Reviews ---------- function addOrder(productId){const user=getCurrentUser(); if(!user){alert('Sign in to make orders'); authModal.style.display='flex'; return} const orders = db.get(LS_ORDERS,[]); const p = sampleProducts.find(x=>x.id==productId); orders.unshift({id:Date.now(),userId:user.id,productId,productTitle:p.title,price:p.price,date:new Date().toISOString()}); db.set(LS_ORDERS,orders); renderOrdersPanel(); alert('Order placed (demo)')}
+
+function renderOrdersPanel(){const node=document.getElementById('orders-list'); const user=getCurrentUser(); const orders = db.get(LS_ORDERS,[]).filter(o=>user?o.userId===user.id:false); if(!user) node.innerHTML='Sign in to see your orders'; else if(orders.length===0) node.innerHTML='No orders yet'; else node.innerHTML = orders.map(o=><div style="padding:6px;border-bottom:1px dashed #eee"><strong>${o.productTitle}</strong><div class="small">₹${o.price} • ${new Date(o.date).toLocaleString()}</div></div>).join(''); }
+
+// Wishlist function toggleWishlist(productId){const user=getCurrentUser(); if(!user){alert('Sign in to manage wishlist'); authModal.style.display='flex'; return} let ws = db.get(LS_WISHLIST,[]); const exists = ws.some(w=>w.userId===user.id && w.productId===productId); if(exists) ws = ws.filter(w=>!(w.userId===user.id && w.productId===productId)); else ws.push({userId:user.id,productId}); db.set(LS_WISHLIST,ws); renderWishlistCount(); alert(exists? 'Removed from wishlist' : 'Added to wishlist'); } function renderWishlistCount(){const user=getCurrentUser(); const ws = db.get(LS_WISHLIST,[]); const count = user ? ws.filter(w=>w.userId===user.id).length : 0; document.getElementById('ws-count').textContent=count; }
+
+// Reviews / Comments function openReview(productId){const p = sampleProducts.find(x=>x.id==productId); const title = prompt('Write a short review for: '+p.title); if(!title) return; const user=getCurrentUser(); if(!user){alert('Sign in to leave reviews'); authModal.style.display='flex'; return} const rev = db.get(LS_REVIEWS,[]); rev.unshift({id:Date.now(),userId:user.id,productId,productTitle:p.title,text:title,date:new Date().toISOString()}); db.set(LS_REVIEWS,rev); alert('Review posted'); renderReviewsList(); }
+
+function renderReviewsList(){const revs = db.get(LS_REVIEWS,[]); const html = revs.map(r=><div style="padding:6px;border-bottom:1px dashed #eee"><strong>${r.productTitle}</strong><div class="small">${r.text} — ${new Date(r.date).toLocaleString()}</div></div>).join(''); // add to content area if on products or home const el = document.getElementById('products-grid'); if(el){ // append a reviews panel under grid's parent card const card = el.closest('.card'); if(card){ let revEl = card.querySelector('.reviews-panel'); if(!revEl){revEl=document.createElement('div');revEl.className='reviews-panel';revEl.style.marginTop='12px'; card.appendChild(revEl)}; revEl.innerHTML = <h4>Latest Reviews</h4>${html||'<div class="small">No reviews yet</div>'}; } } }
+
+renderReviewsList();
+
+// ---------- Customer Care reports ---------- const reportForm = document.getElementById('report-form'); reportForm.addEventListener('submit',e=>{e.preventDefault(); const fd=new FormData(reportForm); const s=fd.get('subject').trim(); const m=fd.get('message').trim(); if(!s||!m) return; const user=getCurrentUser(); const reports=db.get(LS_REPORTS,[]); reports.unshift({id:Date.now(),userId:user?user.id:null,subject:s,message:m,date:new Date().toISOString()}); db.set(LS_REPORTS,reports); document.getElementById('report-status').textContent='Report submitted (demo)'; reportForm.reset();});
+
+document.getElementById('clear-reports').addEventListener('click',()=>{if(confirm('Clear all local reports?')){db.set(LS_REPORTS,[]); document.getElementById('report-status').textContent='Reports cleared.'}});
+
+// ---------- Contact form ---------- document.addEventListener('submit',e=>{ if(e.target && e.target.id==='contact-form'){ e.preventDefault(); const fd=new FormData(e.target); document.getElementById('contact-status').textContent='Message sent (demo)'; e.target.reset(); } });
+
+// ---------- Global click handler for product actions ---------- document.addEventListener('click',e=>{ const add = e.target.closest('[data-add]'); if(add){addOrder(add.dataset.add); return} const wish = e.target.closest('[data-wish]'); if(wish){toggleWishlist(Number(wish.dataset.wish)); return} const rev = e.target.closest('[data-review]'); if(rev){openReview(Number(rev.dataset.review)); return} });
+
+// wishlist button opens a simple panel document.getElementById('btn-wishlist').addEventListener('click',()=>{ const user=getCurrentUser(); if(!user){authModal.style.display='flex'; return} const ws = db.get(LS_WISHLIST,[]).filter(w=>w.userId===user.id); const html = ws.length? ws.map(w=>{const p=sampleProducts.find(s=>s.id===w.productId); return <div style="padding:6px;border-bottom:1px dashed #eee"><strong>${p.title}</strong><div class="small">₹${p.price}</div><div style="margin-top:6px"><button class='btn' data-buy='${p.id}'>Order</button> <button class='btn ghost' data-del='${p.id}'>Remove</button></div></div>}).join('') : '<div class="small">No items in wishlist</div>'; const wpanel = document.createElement('div'); wpanel.className='card'; wpanel.style.position='fixed'; wpanel.style.right='20px'; wpanel.style.top='80px'; wpanel.style.width='360px'; wpanel.innerHTML=<h4>Wishlist</h4>${html}<div style='text-align:right;margin-top:6px'><button class='btn ghost' id='close-wish'>Close</button></div>; document.body.appendChild(wpanel); wpanel.querySelector('#close-wish').addEventListener('click',()=>wpanel.remove()); });
+
+// handle buy/remove inside wishlist panel document.body.addEventListener('click',e=>{ const buy = e.target.closest('[data-buy]'); if(buy){addOrder(Number(buy.dataset.buy)); e.target.closest('.card').remove(); return} const del = e.target.closest('[data-del]'); if(del){const user=getCurrentUser(); let ws=db.get(LS_WISHLIST,[]); ws = ws.filter(w=>!(w.userId===user.id && w.productId===Number(del.dataset.del))); db.set(LS_WISHLIST,ws); e.target.closest('.card').remove(); renderWishlistCount(); alert('Removed'); return} });
+
+// ---------- Small utility to re-render product grids after operations ---------- function refreshViews(){const active = Array.from(menu.querySelectorAll('a')).find(a=>a.classList.contains('active'))?.dataset.view||'home'; if(active==='home') renderHome(); if(active==='products') renderProducts(); if(active==='contact') renderContact(); if(active==='about') renderAbout(); renderReviewsList();}
+
+// re-run render on page show setInterval(()=>{renderOrdersPanel(); renderWishlistCount();},2000);
+
+// on load, refresh product panels refreshViews(); </script>
+
+</body>
+</html>
